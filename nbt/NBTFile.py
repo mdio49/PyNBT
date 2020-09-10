@@ -25,7 +25,7 @@ class NBTFile:
         elif mode == 'load':
             self.__fp = open(path, "rb")
             self.load()
-        elif mode == 'merge':
+        elif mode == 'modify':
             if not os.path.exists(path):
                 self.__fp = open(path, "wb+")
             else:
