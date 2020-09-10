@@ -121,9 +121,6 @@ class RegionFile:
         self.__fp.seek(offset)
         self.__fp.write(after)
         self.__fp.truncate()
-
-        # Unload the chunk from memory.
-        self.unload_chunk(x, z)
     
     def save_chunk(self, x, z, compression='zlib'):
         """Saves the chunk at position (x, z) to the disk (only if the chunk is present in memory)."""
@@ -159,8 +156,7 @@ class RegionFile:
             
             # Initialize the chunk's header if it's not present in the file.
             if self.__locations[x][z] == 0:
-                self.__fp.seek(0, 2)
-                self.__locations[x][z] = int(self.__fp.tell() / 4096) << 8
+                self.__init_chunk(x, z)
             
             # Update the chunk's header.
             offset, old_size = tuple(x * 4096 for x in self.__extract_loc(x, z))
@@ -210,11 +206,15 @@ class RegionFile:
         size = self.__locations[x][z] & 0xFF
         return offset, size
     
+    def __init_chunk(self, x, z):
+        self.__fp.seek(0, 2)
+        self.__locations[x][z] = int(self.__fp.tell() / 4096) << 8
+
     def __resize_chunk(self, x, z, size):
         offset, old_size = self.__extract_loc(x, z)
+        self.__locations[x][z] = (offset << 8) + size if size > 0 else 0
         self.__timestamps[x][z] = int(time.time())
-        self.__locations[x][z] = (offset << 8) + int(size) if size > 0 else 0
-
+        
         # Update the header for chunk (x, z).
         self.__fp.seek(4 * ((x % 32) + (z % 32) * 32))
         self.__fp.write(self.__locations[x][z].to_bytes(4, byteorder='big', signed=False))
