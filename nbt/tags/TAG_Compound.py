@@ -23,6 +23,12 @@ class TAG_Compound(NBTTag):
             raise IndexError("A tag with the indexed name does not exist in the compound.")
         tag.value = value
     
+    def __delitem__(self, key):
+        tag = self.get(key)
+        if tag is None:
+            raise IndexError("A tag with the indexed name does not exist in the compound.")
+        self.__tags.remove(tag)
+    
     def __iter__(self):
         return self.__tags.__iter__()
 
@@ -189,12 +195,6 @@ class TAG_Compound(NBTTag):
                 break
 
         return match
-
-    def remove(self, name):
-        """Removes the tag with the given name from the compound (if it exists)"""
-        tag = self.get(name)
-        if tag is not None:
-            self.__tags.remove(tag)
 
     def clear(self):
         """Clears all tags from the compound."""
