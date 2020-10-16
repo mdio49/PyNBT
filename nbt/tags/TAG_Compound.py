@@ -112,7 +112,10 @@ class TAG_Compound(NBTTag):
         return compound
     
     def add(self, tag, replace=False):
-        """Adds the given tag to the compound. If 'replace' is false, then throws a """
+        """
+        Adds the given tag to the compound. If 'replace' is False, then a ValueError is rasied if a
+        tag with the same name already exists in the compound.
+        """
         if not issubclass(type(tag), NBTTag):
             raise TypeError(f"An object of type '{type(tag).__name__}' is not a valid NBT tag.")
         
@@ -135,7 +138,6 @@ class TAG_Compound(NBTTag):
         - merge:    Copies over all tags from the source and updates the values of tags in the current compound
                     that share the same name. Raises a TypeError if there are tags with inconsistent types.
         - replace:  Copies over all tags from the source, completely replacing any tags with duplicate names.
-                    Raises a TypeError if the source compound contains tags of type TAG_Generic.
         - update:   Only updates tags in the current compound that are also present in the source with the same
                     name. Raises a TypeError if there are tags with inconsistent types.
         """
@@ -210,3 +212,77 @@ class TAG_Compound(NBTTag):
                 result[tag.name] = tag.value
         return result
     
+    @classmethod
+    def from_dict(cls, name, tags):
+        """
+        Converts the given Python dictionary into a compound tag. For each item in the dictionary, a tag
+        will be added to the compound with the key corresponding to the name of the tag. The tag's type
+        be determined by the data type of the value associated with each key.
+        
+        For numeric types, a tuple may be used to distinguish between different numeric tag types, where
+        the first element of the tuple represents the value, and the second element is a single-character
+        literal specifying the data type (i.e. 'b', 's', 'i', 'l', 'f' or 'd'). If a numeric value is used
+        on its own without indicating the data type, then the tag will default to type TAG_Int for integer
+        values, and TAG_Double for decimal values.
+
+        For arrays, a tuple must be used where the first element of the tuple represents the type of the
+        array (i.e. 'B', 'I' or 'L' for byte, integer and long arrays respectively), and the second element
+        contains a Python list consisting of the elements of the array.
+        """
+        compound = cls(name)
+        for key, value in tags.items():
+            tag = cls.__tag_from_value(key, value)
+            compound.add(tag)
+        return compound
+
+    @classmethod
+    def __tag_from_value(cls, name, value):
+        tag = None
+        if isinstance(value, dict):
+            tag = cls.from_dict(name, value)
+        elif isinstance(value, list):
+            tag = nbt.tags.TAG_List(name, None)
+            for x in value:
+                element = cls.__tag_from_value(None, x)
+                tag.append(element)
+        elif isinstance(value, tuple):
+            if len(value) != 2:
+                raise ValueError(f"Expected two elements for a value of type 'tuple'.")
+            elif isinstance(value[0], str) and isinstance(value[1], list):
+                if value[0] == 'B':
+                    tag = nbt.tags.TAG_Byte_Array(name, value[1])
+                elif value[0] == 'I':
+                    tag = nbt.tags.TAG_Int_Array(name, value[1])
+                elif value[0] == 'L':
+                    tag = nbt.tags.TAG_Long_Array(name, value[1])
+                else:
+                    raise ValueError(f"Invalid literal '{value[0]}'.")
+            elif isinstance(value[0], (int, float)) and isinstance(value[1], str):
+                literal = value[1].lower()
+                if literal == 'd':
+                    tag = nbt.tags.TAG_Double(name, value[0])
+                elif literal == 'f':
+                    tag = nbt.tags.TAG_Float(name, value[0])
+                elif literal == 'l':
+                    tag = nbt.tags.TAG_Long(name, value[0])
+                elif literal == 'i':
+                    tag = nbt.tags.TAG_Int(name, value[0])
+                elif literal == 's':
+                    tag = nbt.tags.TAG_Short(name, value[0])
+                elif literal == 'b':
+                    tag = nbt.tags.TAG_Byte(name, value[0])
+                else:
+                    raise ValueError(f"Invalid literal '{value[1]}'.")
+            else:
+                raise TypeError(f"Tuple with elements of type '{type(value[0]).__name__}' and '{type(value[1]).__name__}' is invalid.")
+        elif isinstance(value, str):
+            tag = nbt.tags.TAG_String(name, value)
+        elif isinstance(value, bool):
+            tag = nbt.tags.TAG_Byte(name, 1 if value else 0)
+        elif isinstance(value, int):
+            tag = nbt.tags.TAG_Int(name, value)
+        elif isinstance(value, float):
+            tag = nbt.tags.TAG_Double(name, value)
+        else:
+            raise TypeError(f"Cannot allocate value '{value}' to an appropriate tag type.")
+        return tag

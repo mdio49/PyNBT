@@ -9,7 +9,7 @@ class NBTFile:
     
     The file is automatically opened at the given path, and will be closed dynamically
     when the NBTFile object is destroyed. The 'mode' argument is optional, and can be
-    used to specify how the file is opened (the default is 'create').
+    used to specify how the file is opened (the default is 'modify').
     - create:   Opens the file for writing, creating a new file and overwriting the contents of
                 the current file at the path if it already exists.
     - load      Opens the file for reading, loading the NBT data from the current file. Raises a
@@ -17,7 +17,7 @@ class NBTFile:
     - modify:   Opens the file for reading and writing. If the file already exists, then the NBT
                 data is loaded into the current NBTFile instance.
     """
-    def __init__(self, path, mode='create'):
+    def __init__(self, path, mode='modify'):
         self.__fp = None
         if mode == 'create':
             self.__fp = open(path, "wb")

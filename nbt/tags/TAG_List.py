@@ -35,6 +35,18 @@ class TAG_List(NBTTag):
     def __setitem__(self, key, value):
         self.__tags[key].value = value
 
+    def __delitem__(self, key):
+        if isinstance(key, (int, slice)):
+            del self.__tags[key]
+        elif isinstance(key, dict):
+            if self.__type is not None and self.__type != nbt.tags.TAG_Compound:
+                raise TypeError("Dictionary indexing is only supported for lists with elements of type TAG_Compound.")
+            for tag in self.__tags:
+                if tag.contains(key):
+                    self.__tags.remove(tag)
+        else:
+            raise TypeError(f"Expected key of type 'int', 'slice', or 'dict'; not '{type(key).__name__}'.")
+
     def __iter__(self):
         return self.__tags.__iter__()
 

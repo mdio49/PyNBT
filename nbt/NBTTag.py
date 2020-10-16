@@ -15,7 +15,7 @@ class NBTTag(ABC):
             return True
         if other is None:
             return False
-        if type(self) != TAG_Generic and type(other) != TAG_Generic and type(self) != type(other):
+        if type(self) != type(other):
             return False
         if self.name != other.name:
             return False
