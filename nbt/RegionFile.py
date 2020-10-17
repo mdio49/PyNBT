@@ -141,6 +141,8 @@ class RegionFile:
             elif compression == 'zlib':
                 data = gzip.zlib.compress(data)
                 compression_id = 2
+            elif compression != 'none':
+                raise ValueError("Invalid compression type specified.")
             
             # Write the data to the stream.
             length = len(data) + 1

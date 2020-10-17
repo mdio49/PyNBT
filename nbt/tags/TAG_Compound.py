@@ -30,10 +30,16 @@ class TAG_Compound(NBTTag):
         self.__tags.remove(tag)
     
     def __iter__(self):
-        return self.__tags.__iter__()
+        self.__i = 0
+        return self
 
     def __next__(self):
-        return self.__tags.__next__()
+        if self.__i >= len(self.__tags):
+            raise StopIteration
+        name = self.__tags[self.__i].name
+        value = self.__tags[self.__i].value
+        self.__i += 1
+        return name, value
     
     def __len__(self):
         return len(self.__tags)
