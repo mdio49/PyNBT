@@ -17,8 +17,9 @@ class NBTFile:
     - modify:   Opens the file for reading and writing. If the file already exists, then the NBT
                 data is loaded into the current NBTFile instance.
     """
-    def __init__(self, path, mode='modify'):
+    def __init__(self, path, mode='modify', compress=True):
         self.__fp = None
+        self.__compress = compress
         if mode == 'create':
             self.__fp = open(path, "wb")
             self.__root = TAG_Compound(None)
@@ -54,7 +55,7 @@ class NBTFile:
     
     def copy(self, path):
         """Creates a copy of the current NBTFile instance at a different location with the same tags."""
-        file = NBTFile(path, mode='create')
+        file = NBTFile(path, mode='create', compress=self.__compress)
         file.__root = deepcopy(self.root)
         file.save()
         return file
@@ -63,12 +64,14 @@ class NBTFile:
         """Saves the NBT data to the disk."""
         self.__fp.truncate(0)
         payload = self.__root.payload()
-        payload = gzip.compress(payload)
+        if self.__compress:
+            payload = gzip.compress(payload)
         self.__fp.write(payload)
     
     def load(self):
         self.__fp.seek(0)
         data = self.__fp.read()
-        data = gzip.decompress(data)
+        if self.__compress:
+            data = gzip.decompress(data)
         fp = io.BytesIO(data)
         self.__root = TAG_Compound.load(None, fp)
