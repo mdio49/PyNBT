@@ -57,7 +57,7 @@ class TAG_List(NBTTag):
         return len(self.__tags)
     
     def __str__(self):
-        return str(self.to_array())
+        return '[' + ','.join(f'{tag}' for tag in self.__tags) + ']'
 
     def __eq__(self, other):
         if self is other:

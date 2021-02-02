@@ -4,10 +4,14 @@ from nbt.NBTTag import NBTTag
 
 class NBTTag_Integer(NBTTag, ABC):
 
-    def __init__(self, name, value, min_value, max_value):
+    def __init__(self, name, value, min_value, max_value, suffix=''):
         self.min_value = min_value
         self.max_value = max_value
         super().__init__(name, value)
+        self.suffix = suffix
+    
+    def __str__(self):
+        return f'{self.value}{self.suffix}'
     
     def validate(self, value):
         if not isinstance(value, int) or not (value >= self.min_value and value <= self.max_value):
@@ -15,9 +19,13 @@ class NBTTag_Integer(NBTTag, ABC):
 
 class NBTTag_Array(NBTTag, ABC):
 
-    def __init__(self, name, value):
+    def __init__(self, name, value, prefix):
         super().__init__(name, value)
+        self.prefix = prefix
     
+    def __str__(self):
+        return f"[{self.prefix};{','.join(str(x) for x in self.value)}]"
+
     @abstractclassmethod
     def array_type(cls):
         pass
@@ -45,7 +53,7 @@ class NBTTag_Array(NBTTag, ABC):
 class TAG_Byte(NBTTag_Integer):
 
     def __init__(self, name, value):
-        super().__init__(name, value, -128, 127)
+        super().__init__(name, value, -128, 127, suffix='b')
     
     @classmethod
     def get_id(cls):
@@ -62,7 +70,7 @@ class TAG_Byte(NBTTag_Integer):
 class TAG_Short(NBTTag_Integer):
 
     def __init__(self, name, value):
-        super().__init__(name, value, -32768, 32767)
+        super().__init__(name, value, -32768, 32767, suffix='s')
     
     @classmethod
     def get_id(cls):
@@ -96,7 +104,7 @@ class TAG_Int(NBTTag_Integer):
 class TAG_Long(NBTTag_Integer):
 
     def __init__(self, name, value):
-        super().__init__(name, value, -9223372036854775808, 9223372036854775807)
+        super().__init__(name, value, -9223372036854775808, 9223372036854775807, suffix='L')
 
     @classmethod
     def get_id(cls):
@@ -114,6 +122,9 @@ class TAG_Float(NBTTag):
 
     def __init__(self, name, value):
         super().__init__(name, value)
+
+    def __str__(self):
+        return f'{self.value}f'
 
     def validate(self, value):
         if not isinstance(value, (float, int)):
@@ -136,6 +147,9 @@ class TAG_Double(NBTTag):
     def __init__(self, name, value):
         super().__init__(name, value)
 
+    def __str__(self):
+        return f'{self.value}d' if self.value.is_integer() else f'{self.value}'
+    
     def validate(self, value):
         if not isinstance(value, (float, int)):
             raise TypeError(f"Expected decimal value.")
@@ -155,7 +169,7 @@ class TAG_Double(NBTTag):
 class TAG_Byte_Array(NBTTag_Array):
 
     def __init__(self, name, value):
-        super().__init__(name, value)
+        super().__init__(name, value, 'B')
     
     @classmethod
     def array_type(cls):
@@ -170,6 +184,9 @@ class TAG_String(NBTTag):
     def __init__(self, name, value):
         super().__init__(name, value)
     
+    def __str__(self):
+        return f'"{self.value}"'
+
     def validate(self, value):
         if not isinstance(value, str):
             raise TypeError(f"Expected string value.")
@@ -191,7 +208,7 @@ class TAG_String(NBTTag):
 class TAG_Int_Array(NBTTag_Array):
 
     def __init__(self, name, value):
-        super().__init__(name, value)
+        super().__init__(name, value, 'I')
     
     @classmethod
     def array_type(cls):
@@ -204,7 +221,7 @@ class TAG_Int_Array(NBTTag_Array):
 class TAG_Long_Array(NBTTag_Array):
 
     def __init__(self, name, value):
-        super().__init__(name, value)
+        super().__init__(name, value, 'L')
     
     @classmethod
     def array_type(cls):

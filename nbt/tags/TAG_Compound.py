@@ -45,7 +45,7 @@ class TAG_Compound(NBTTag):
         return len(self.__tags)
     
     def __str__(self):
-        return str(self.to_dict())
+        return '{' + ','.join(f'{tag.name}:{tag}' for tag in self.__tags) + '}'
 
     def __eq__(self, other):
         if self is other:
