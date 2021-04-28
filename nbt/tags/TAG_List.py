@@ -48,10 +48,15 @@ class TAG_List(NBTTag):
             raise TypeError(f"Expected key of type 'int', 'slice', or 'dict'; not '{type(key).__name__}'.")
 
     def __iter__(self):
-        return self.__tags.__iter__()
+        self.__i = 0
+        return self
 
     def __next__(self):
-        return self.__tags.__next__()
+        if self.__i >= len(self.__tags):
+            raise StopIteration
+        value = self.__tags[self.__i].value
+        self.__i += 1
+        return value
 
     def __len__(self):
         return len(self.__tags)
