@@ -50,7 +50,7 @@ class RegionFile:
         self.__z = 0
         return self
     
-    def __next__(self):
+    def __next__(self) -> (int, int, TAG_Compound):
         x = 0; z = 0; chunk = None
         while chunk is None:
             if self.__x >= 32:
@@ -63,7 +63,7 @@ class RegionFile:
                 self.__x += 1
         return x, z, chunk
     
-    def get_chunk(self, x, z):
+    def get_chunk(self, x, z) -> TAG_Compound:
         """Gets the chunk at position (x, z) in memory. Returns 'None' if the chunk is not loaded or is not present in the region file."""
         return self.__chunks[x][z]
     
@@ -71,7 +71,7 @@ class RegionFile:
         """Sets the chunk at position (x, z) in memory. Note that this does not modify the region file on disk."""
         self.__chunks[x][z] = chunk
     
-    def load_chunk(self, x, z):
+    def load_chunk(self, x, z) -> TAG_Compound:
         """Loads the chunk at position (x, z) into memory. Returns a TAG_Compound containing the chunk's data, or 'None' if the chunk is not present in the region file."""
         if self.__locations[x][z] == 0:
             return None

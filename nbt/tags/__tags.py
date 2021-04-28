@@ -1,4 +1,4 @@
-import struct
+import struct, codecs
 from abc import ABC, abstractmethod, abstractclassmethod
 from nbt.NBTTag import NBTTag
 
@@ -148,7 +148,7 @@ class TAG_Double(NBTTag):
         super().__init__(name, value)
 
     def __str__(self):
-        return f'{self.value}d' if self.value.is_integer() else f'{self.value}'
+        return f'{self.value}d' if isinstance(self.value, int) or self.value.is_integer() else f'{self.value}'
     
     def validate(self, value):
         if not isinstance(value, (float, int)):
@@ -185,7 +185,10 @@ class TAG_String(NBTTag):
         super().__init__(name, value)
     
     def __str__(self):
-        return f'"{self.value}"'
+        output = self.value.replace('\\', '\\\\')
+        if '"' in output:
+            return '\'' + output.replace('\'', '\\\'') + '\''
+        return '"' + output.replace('"', '\\"') + '"'
 
     def validate(self, value):
         if not isinstance(value, str):

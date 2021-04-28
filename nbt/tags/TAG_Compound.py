@@ -30,16 +30,10 @@ class TAG_Compound(NBTTag):
         self.__tags.remove(tag)
     
     def __iter__(self):
-        self.__i = 0
-        return self
+        return self.__tags.__iter__()
 
     def __next__(self):
-        if self.__i >= len(self.__tags):
-            raise StopIteration
-        name = self.__tags[self.__i].name
-        value = self.__tags[self.__i].value
-        self.__i += 1
-        return name, value
+        return self.__tags.__next__()
     
     def __len__(self):
         return len(self.__tags)
@@ -176,11 +170,11 @@ class TAG_Compound(NBTTag):
             elif mode != 'update':
                 self.add(deepcopy(tag))
 
-    def get(self, name):
+    def get(self, name) -> NBTTag:
         """Gets the tag in the compound with the given name, or None if the tag doesn't exist."""
         return next((x for x in self.__tags if x.name == name), None)
     
-    def contains(self, tags : dict):
+    def contains(self, tags: dict) -> bool:
         """
         Tests if the compound contains the data in the given dictionary. If 'None' is used as a value
         for an item in the dictionary, then the tag may hold any value (i.e. only the name is checked).
