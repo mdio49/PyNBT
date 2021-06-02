@@ -1,5 +1,6 @@
 import nbt, os, gzip, io, time
 from nbt.tags import TAG_Compound
+from typing import Tuple
 
 class RegionFile:
 
@@ -50,7 +51,7 @@ class RegionFile:
         self.__z = 0
         return self
     
-    def __next__(self) -> (int, int, TAG_Compound):
+    def __next__(self) -> Tuple[int, int, TAG_Compound]:
         x = 0; z = 0; chunk = None
         while chunk is None:
             if self.__x >= 32:

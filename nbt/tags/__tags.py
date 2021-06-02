@@ -1,5 +1,6 @@
 import struct, codecs
 from abc import ABC, abstractmethod, abstractclassmethod
+from nbt.modified_utf8 import utf8m_to_utf8s, utf8s_to_utf8m
 from nbt.NBTTag import NBTTag
 
 class NBTTag_Integer(NBTTag, ABC):
@@ -199,13 +200,13 @@ class TAG_String(NBTTag):
         return 8
     
     def payload(self):
-        text = self.value.encode(encoding='UTF-8')
+        text = utf8s_to_utf8m(self.value.encode(encoding='UTF-8'))
         return TAG_Short(None, len(text)).payload() + text
     
     @classmethod
     def load(cls, name, fp):
         length = TAG_Short.load(None, fp).value
-        value = str(fp.read(length), encoding='UTF-8')
+        value = str(utf8m_to_utf8s(fp.read(length)), encoding='UTF-8')
         return cls(name, value)
 
 class TAG_Int_Array(NBTTag_Array):
